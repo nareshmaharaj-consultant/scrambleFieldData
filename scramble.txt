@@ -1,0 +1,55 @@
+# https://docs.mongodb.com/manual/reference/bson-types/
+
+function scramble(dbName, colName, num) {
+	var database = db.getSiblingDB(dbName)
+	var collection = database.getCollection(colName);
+
+	var data = collection.aggregate([{$sample: {size: num}}]);
+	data.forEach( 
+		function(document)
+		{ 
+			for(var indexField in document) {
+				// print( typeof document[indexField] );
+				switch( typeof document[indexField]  ) 
+				{
+					case 'object': // date
+						if ( document[indexField] instanceof Date) {
+							var day = 1000 * 60 * 60 * 24 * 365 * (2019-1970);
+  							document[indexField] = new Date(Date.now() - (Math.floor(Math.random() * day)));
+						}
+						break;
+					case 'string':
+						len = document[indexField].length;
+						document[indexField] = getMashedString(len);
+    						break;
+					case 'number':
+						if ( typeof document[indexField] == 'double' )
+						{
+							document[indexField] = Math.random() * 100000000;
+						}
+						else {
+							document[indexField] = Math.floor((Math.random() * 100000000) );
+						}
+						break;
+				}
+				
+			}
+			printjson(document)
+		}
+	)
+}
+
+function getMashedString(len){
+	var retval = "";
+	var alpha = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+
+	for (i = 0; i < len; i++) {
+		var RAND = Math.floor((Math.random() * 36) -1);
+    		if ( RAND < 0 ) {
+      			RAND = 0;
+   		}
+    		var someChars = alpha[RAND];
+		retval += someChars;
+	}
+	return retval;
+} 
