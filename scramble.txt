@@ -3,7 +3,7 @@
 function scramble(dbName, colName, num) {
 	var database = db.getSiblingDB(dbName)
 	var collection = database.getCollection(colName);
-
+	var listOfDocuments = [];
 	var data = collection.aggregate([{$sample: {size: num}}]);
 	data.forEach( 
 		function(document)
@@ -12,10 +12,19 @@ function scramble(dbName, colName, num) {
 				// print( typeof document[indexField] );
 				switch( typeof document[indexField]  ) 
 				{
-					case 'object': // date
+					case 'object': 
+						// Date
 						if ( document[indexField] instanceof Date) {
 							var day = 1000 * 60 * 60 * 24 * 365 * (2019-1970);
   							document[indexField] = new Date(Date.now() - (Math.floor(Math.random() * day)));
+						}
+						// ObjectID
+						if ( document[indexField] instanceof ObjectId ) {
+							document[indexField] = ObjectId();
+						}
+						// NumberDecimal
+						if ( document[indexField] instanceof NumberDecimal ) {
+							document[indexField] = NumberDecimal( Math.random() * 10000 );
 						}
 						break;
 					case 'string':
@@ -23,20 +32,15 @@ function scramble(dbName, colName, num) {
 						document[indexField] = getMashedString(len);
     						break;
 					case 'number':
-						if ( typeof document[indexField] == 'double' )
-						{
-							document[indexField] = Math.random() * 100000000;
-						}
-						else {
-							document[indexField] = Math.floor((Math.random() * 100000000) );
-						}
+						document[indexField] = Math.floor( (Math.random() * 10000) );						
 						break;
 				}
 				
 			}
-			printjson(document)
+			listOfDocuments.push(document);				
 		}
 	)
+	printjson(listOfDocuments);
 }
 
 function getMashedString(len){
