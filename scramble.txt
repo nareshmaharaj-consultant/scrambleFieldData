@@ -1,4 +1,5 @@
 # https://docs.mongodb.com/manual/reference/bson-types/
+
 function scramble(dbName, colName, num) {
 	var database = db.getSiblingDB(dbName)
 	var collection = database.getCollection(colName);
@@ -8,40 +9,50 @@ function scramble(dbName, colName, num) {
 		function(document)
 		{ 
 			for(var indexField in document) {				
-				document[indexField] = get( document, indexField );
+				document[indexField] = getFieldScrambled( document[indexField] );
 			}
 			listOfDocuments.push(document);				
 		}
 	)
 	printjson(listOfDocuments);
 }
-function get(document,indexField){
-	// print( typeof document[indexField] );
-	switch( typeof document[indexField]  ) 
+function getFieldScrambled(field){
+	// print( typeof field );
+	switch( typeof field  ) 
 	{
 		case 'object': 
 			// Date
-			if ( document[indexField] instanceof Date) {
+			if ( field instanceof Date) {
 				var day = 1000 * 60 * 60 * 24 * 365 * (2019-1970);
 			}
 			// ObjectID
-			if ( document[indexField] instanceof ObjectId ) {
-				document[indexField] = ObjectId();
+			if ( field instanceof ObjectId ) {
+				field = ObjectId();
 			}
 			// NumberDecimal
-			if ( document[indexField] instanceof NumberDecimal ) {
-				document[indexField] = NumberDecimal( Math.random() * 10000 );
+			if ( field instanceof NumberDecimal ) {
+				field = NumberDecimal( Math.random() * 10000 );
+			}
+			// ARRAY
+			if ( field instanceof Array ) {
+				items = [];
+				field.forEach(
+					function(item){ 
+						items.push( getFieldScrambled(item) );
+					}
+				)
+				field = items;
 			}
 			break;
 		case 'string':
-			len = document[indexField].length;
-			document[indexField] = getMashedString(len);
+			len = field.length;
+			field = getMashedString(len);
     			break;
 		case 'number':
-			document[indexField] = Math.floor( (Math.random() * 10000) );						
+			field = Math.floor( (Math.random() * 10000) );						
 			break;
 	}
-	return document[indexField];	
+	return field;	
 }
 function getMashedString(len){
 	var retval = "";
@@ -57,3 +68,5 @@ function getMashedString(len){
 	}
 	return retval;
 } 
+
+
