@@ -1,5 +1,4 @@
 # https://docs.mongodb.com/manual/reference/bson-types/
-
 function scramble(dbName, colName, num) {
 	var database = db.getSiblingDB(dbName)
 	var collection = database.getCollection(colName);
@@ -8,41 +7,42 @@ function scramble(dbName, colName, num) {
 	data.forEach( 
 		function(document)
 		{ 
-			for(var indexField in document) {
-				// print( typeof document[indexField] );
-				switch( typeof document[indexField]  ) 
-				{
-					case 'object': 
-						// Date
-						if ( document[indexField] instanceof Date) {
-							var day = 1000 * 60 * 60 * 24 * 365 * (2019-1970);
-  							document[indexField] = new Date(Date.now() - (Math.floor(Math.random() * day)));
-						}
-						// ObjectID
-						if ( document[indexField] instanceof ObjectId ) {
-							document[indexField] = ObjectId();
-						}
-						// NumberDecimal
-						if ( document[indexField] instanceof NumberDecimal ) {
-							document[indexField] = NumberDecimal( Math.random() * 10000 );
-						}
-						break;
-					case 'string':
-						len = document[indexField].length;
-						document[indexField] = getMashedString(len);
-    						break;
-					case 'number':
-						document[indexField] = Math.floor( (Math.random() * 10000) );						
-						break;
-				}
-				
+			for(var indexField in document) {				
+				document[indexField] = get( document, indexField );
 			}
 			listOfDocuments.push(document);				
 		}
 	)
 	printjson(listOfDocuments);
 }
-
+function get(document,indexField){
+	// print( typeof document[indexField] );
+	switch( typeof document[indexField]  ) 
+	{
+		case 'object': 
+			// Date
+			if ( document[indexField] instanceof Date) {
+				var day = 1000 * 60 * 60 * 24 * 365 * (2019-1970);
+			}
+			// ObjectID
+			if ( document[indexField] instanceof ObjectId ) {
+				document[indexField] = ObjectId();
+			}
+			// NumberDecimal
+			if ( document[indexField] instanceof NumberDecimal ) {
+				document[indexField] = NumberDecimal( Math.random() * 10000 );
+			}
+			break;
+		case 'string':
+			len = document[indexField].length;
+			document[indexField] = getMashedString(len);
+    			break;
+		case 'number':
+			document[indexField] = Math.floor( (Math.random() * 10000) );						
+			break;
+	}
+	return document[indexField];	
+}
 function getMashedString(len){
 	var retval = "";
 	var alpha = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
